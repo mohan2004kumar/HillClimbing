@@ -1,60 +1,51 @@
 from random import *
+import random
 import numpy
+import copy
 
 countCities = 20;
 # 2D Array
 cities = numpy.zeros(shape=(20,20))
-# endgueltige Sortierung der Staedte
-tour = [int]*countCities
-# zum Testen der Sortierung
+# tour
 hypothesis = [int]*countCities
 visitedCities = []
+saveState = []
 
-threshold = 19
+threshold = 20
 lastFitness = 0
 trials = 0
 cityIndex = 1
 
-# vergleicht die Distanzen von tour und hypothesis; beide sind bis auf die letzte Stadt identisch sortiert;
-# die letzte Stadt in hypothesis ist zufaellig gewaehlt; geringere Distanz = bessere Fitness
-def getFitness(cityIndex, tour, hypothesis, cities):
+# calculates fitness based on the difference between the distances
+def getFitness(fitness, hypothesis, saveState, cities):
+    oldDistance = getDistance(cities, saveState)
+    newDistance = getDistance(cities, hypothesis)
+    print("Old Distance ",oldDistance,"km")
+    print("New Distance ", newDistance,"km")
 
-    fitness = cityIndex-1
-    print()
-    print("Alt")
-    currentOrder = getDistance(cities, tour, cityIndex)
-    print()
-    print("Aktuell")
-    possibleOrder = getDistance(cities, hypothesis, cityIndex)
-    print()
-
-    if(currentOrder > 0 and possibleOrder > 0):
-        if (currentOrder < possibleOrder):
-            fitness -= 1
-        elif(currentOrder != possibleOrder):
-            fitness += 1
+    if(oldDistance > newDistance):
+        fitness += 1
+    elif(oldDistance < newDistance):
+        fitness -= 1
 
     return fitness
 
-# waehle zufaellige Stadt von Position cityIndex (in hypothesis)
+# choose random City at position cityIndex
 def doRandomStep():
-    global hypothesis
-    randomStep = randint(1,countCities-1)
-    hypothesis[cityIndex] = randomStep
-
-# uebertrage die Aenderung auf die Liste mit der endgueltigen Sortierung der Staedte
-def changeItemPos(item, newItemPos):
-    global tour
     global visitedCities
-    visitedCities.append(item)
-    tour.remove(item)
-    tour.insert(newItemPos,item)
-    for i in range(len(tour)):
-        print("[",tour[i],"] ",end="")
+    global saveState
+    global hypothesis
+    if(len(visitedCities) >= countCities):
+        visitedCities.clear()
+        visitedCities.append(0)
+    randomNumbers = list(set(saveState) - set(visitedCities))
+    randomStep = random.choice(randomNumbers)
+    visitedCities.append(randomStep)
+    hypothesis.remove(randomStep)
+    hypothesis.insert(cityIndex,randomStep)
 
-# gehe zur naechsten Stadt
+# next city
 def increment():
-    global lastFitness
     global cityIndex
     global visitedCities
     if (cityIndex < countCities - 2):
@@ -62,27 +53,23 @@ def increment():
     else:
         visitedCities.clear()
         cityIndex = 1
-        lastFitness = 0
 
-# berechne Distanz von der ersten Stadt bis zur Stadt an der Stelle cityIndex (z.B. A -> B -> C, also von A -> C)
-def getDistance(cities, tour, cityIndex):
+# calculates distance from tour
+def getDistance(cities, hypothesis):
     distance = 0
-    for i in range(cityIndex+1):
-        if (i < cityIndex):
-            distance += cities[tour[i]][tour[i+1]]
-            print("[",tour[i],"]",distance,"km ",end="")
+    for i in range(countCities):
+        if (i < countCities-1):
+            distance += cities[hypothesis[i]][hypothesis[i+1]]
+            print("[",hypothesis[i],"]",distance,"km ",end="")
         else:
-            print("[",tour[i],"]",end="")
+            print("[",hypothesis[i],"]")
 
     return distance
 
 if __name__ == '__main__':
 
     for i in range(countCities):
-
-        tour[i] = i
         hypothesis[i] = i
-
         for j in range(countCities):
             if (j > i):
                 cities[i][j] = randint(1,100)
@@ -92,24 +79,22 @@ if __name__ == '__main__':
     print("=== START ===");
     while(lastFitness < threshold):
 
+        print("_________________________________________________________")
+        saveState = copy.deepcopy(hypothesis)
         doRandomStep()
-        currentFitness = getFitness(cityIndex, tour, hypothesis, cities)
+        currentFitness = getFitness(cityIndex, hypothesis, saveState, cities)
+        print("Old fitness ", lastFitness)
+        print("Current fitness ",currentFitness)
 
-        print("Aktuelle Fitness ",currentFitness)
-        print("Alte Fitness ",lastFitness)
-
-        if (currentFitness > lastFitness and (hypothesis[cityIndex] not in visitedCities)):
-            trials = 0
+        if (currentFitness > lastFitness):
             lastFitness = currentFitness
-            changeItemPos(hypothesis[cityIndex], cityIndex)
-            increment()
-        elif(trials < 5):
-            trials += 1
-        else:
-            hypothesis[cityIndex] = tour[cityIndex]
-            visitedCities.append(tour[cityIndex])
-            lastFitness += 1
-            trials = 0
-            increment()
+        elif(currentFitness < lastFitness):
+            hypothesis = copy.deepcopy(saveState)
+            if(trials < 3):
+                increment()
+            else:
+                trials = 0
+            visitedCities.append(saveState[cityIndex])
+
 
 
