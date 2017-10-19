@@ -11,7 +11,7 @@ hypothesis = [int]*countCities
 visitedCities = []
 saveState = []
 
-threshold = 20
+threshold = 25
 lastFitness = 0
 trials = 0
 cityIndex = 1
@@ -21,7 +21,7 @@ def getFitness(fitness, hypothesis, saveState, cities):
     oldDistance = getDistance(cities, saveState)
     newDistance = getDistance(cities, hypothesis)
     print("Old Distance ",oldDistance,"km")
-    print("New Distance ", newDistance,"km")
+    print("New Distance ",newDistance,"km")
 
     if(oldDistance > newDistance):
         fitness += 1
@@ -82,8 +82,8 @@ if __name__ == '__main__':
         print("_________________________________________________________")
         saveState = copy.deepcopy(hypothesis)
         doRandomStep()
-        currentFitness = getFitness(cityIndex, hypothesis, saveState, cities)
-        print("Old fitness ", lastFitness)
+        currentFitness = getFitness(lastFitness, hypothesis, saveState, cities)
+        print("Old fitness ",lastFitness)
         print("Current fitness ",currentFitness)
 
         if (currentFitness > lastFitness):
