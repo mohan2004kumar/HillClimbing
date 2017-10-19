@@ -99,7 +99,7 @@ if __name__ == '__main__':
         print("Alte Fitness ",lastFitness)
 
         if (currentFitness > lastFitness and (hypothesis[cityIndex] not in visitedCities)):
-            versuche = 0
+            trials = 0
             lastFitness = currentFitness
             changeItemPos(hypothesis[cityIndex], cityIndex)
             increment()
